@@ -26,7 +26,7 @@ defmodule DiscordWebhook do
   """
   @spec execute(Endpoint.t(), Request.t()) :: {:ok, Req.Response.t()} | {:error, Exception.t()}
   def execute(%Endpoint{} = endpoint, %Request{} = request) do
-    Req.new(method: :post, url: Endpoint.url(endpoint), form_multipart: Request.to_parts(request))
+    Req.new(method: :post, url: Endpoint.url(endpoint), form_multipart: Request.to_form_multipart(request))
     |> Req.request()
   end
 end

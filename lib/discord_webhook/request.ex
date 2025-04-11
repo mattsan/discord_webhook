@@ -1,5 +1,9 @@
 defmodule DiscordWebhook.Request do
-  defstruct payload: %DiscordWebhook.Payload{}, files: []
+  @moduledoc """
+  A struct of requst and construction functions.
+  """
+
+  defstruct [:payload, :files]
 
   alias DiscordWebhook.Embed
   alias DiscordWebhook.Payload
@@ -12,7 +16,7 @@ defmodule DiscordWebhook.Request do
 
   @spec new :: t()
   def new do
-    %__MODULE__{}
+    %__MODULE__{payload: %Payload{}, files: []}
   end
 
   @spec set_content(t(), binary()) :: t()
@@ -61,8 +65,8 @@ defmodule DiscordWebhook.Request do
   defdelegate embed_footer(embed, text, icon_url), to: Embed, as: :set_footer
 
   @doc false
-  @spec to_parts(t()) :: list()
-  def to_parts(%__MODULE__{} = request) do
+  @spec to_form_multipart(t()) :: list()
+  def to_form_multipart(%__MODULE__{} = request) do
     files =
       request.files
       |> Enum.with_index(fn {filename, body}, index ->
