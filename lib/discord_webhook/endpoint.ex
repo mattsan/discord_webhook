@@ -1,22 +1,61 @@
 defmodule DiscordWebhook.Endpoint do
-  defstruct [:base, :webhook_id, :webhook_token]
+  @moduledoc """
+  A struct of Discord endpoint.
+  """
+
+  defstruct [:base, :id, :token]
 
   @type t() :: %__MODULE__{
           base: URI.t(),
-          webhook_id: binary(),
-          webhook_token: binary()
+          id: binary(),
+          token: binary()
         }
+  @type endpoint_config() :: binary() | {:system, binary()}
 
   @base URI.new!("https://discord.com/api/webhooks")
 
-  @spec new(binary(), binary()) :: t()
-  def new(webhook_id, webhook_token) do
-    %__MODULE__{base: @base, webhook_id: webhook_id, webhook_token: webhook_token}
+  @doc """
+  Returns a new Endpoint struct.
+
+  ### Examples
+
+  ```elixir
+  # from binaries
+  endpoint = Endpoint.new("foo", "bar")
+  ```
+
+  ```elixir
+  # from environment variables
+  endpoint = Endpoint.new({:system, "WEBHOOK_ID"}, {:system, "WEBHOOK_TOKEN"})
+  ```
+  """
+  @spec new(endpoint_config(), endpoint_config()) :: t()
+  def new(id, token) when is_binary(id) and is_binary(token) do
+    %__MODULE__{base: @base, id: id, token: token}
   end
 
+  def new({:system, id_key}, token) do
+    new(System.fetch_env!(id_key), token)
+  end
+
+  def new(id, {:system, token_key}) do
+    new(id, System.fetch_env!(token_key))
+  end
+
+  @doc """
+  Returns the endpoint URL.
+
+  ### Examples
+
+  ```elixir
+  iex> Endpoint.new("foo", "bar")
+  ...> |> Endpoint.url()
+  "https://discord.com/api/webhooks/foo/bar"
+  ```
+  """
   @spec url(t()) :: binary()
-  def url(%__MODULE__{base: base, webhook_id: webhook_id, webhook_token: webhook_token}) do
-    path = Path.join(["/", webhook_id, webhook_token])
+  def url(%__MODULE__{base: base, id: id, token: token}) do
+    path = Path.join(["/", id, token])
 
     base
     |> URI.append_path(path)
