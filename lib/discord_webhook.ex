@@ -14,11 +14,12 @@ defmodule DiscordWebhook do
   ```elixir
   alias DiscordWebhook.{Endpoint, Request}
 
-  # fetch id and token from environment variables
   webhook_id = System.fetch_env!("DISCORD_WEBHOOK_ID")
   webhook_token = System.fetch_env!("DISCORD_WEBHOOK_TOKEN")
-
   endpoint = Endpoint.new(webhook_id, webhook_token)
+  # or
+  endpoint = Endpoint.new({:system, "DISCORD_WEBHOOK_ID"}, {:system, "DISCORD_WEBHOOK_TOKEN"})
+
   request = Request.new() |> Request.set_content("Hello")
   DiscordWebhook.execute(endpoint, request)
   ```elixir
