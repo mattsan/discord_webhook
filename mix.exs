@@ -8,7 +8,8 @@ defmodule DiscordWebhook.MixProject do
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :dev,
-      deps: deps()
+      deps: deps(),
+      docs: docs()
     ]
   end
 
@@ -20,11 +21,24 @@ defmodule DiscordWebhook.MixProject do
 
   defp deps do
     [
+      {:mimerl, "~> 1.0"},
       {:req, "~> 0.5"},
-      {:dialyxir, "~> 1.0", only: [:dev]},
-      {:credo, "~> 1.0", only: [:dev]},
-      {:ex_doc, "~> 0.37", only: [:dev]},
-      {:igniter, "~> 0.5", only: [:dev, :test]}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:credo, "~> 1.0", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.37", only: [:dev], runtime: false},
+      {:igniter, "~> 0.5", only: [:dev, :test], runtome: false}
+    ]
+  end
+
+  defp docs do
+    [
+      extras: [
+        "README.md"
+      ],
+      main: "readme",
+      groups_for_docs: [
+        Guards: &(&1[:guard] == true)
+      ]
     ]
   end
 end
