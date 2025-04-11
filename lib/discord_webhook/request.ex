@@ -60,6 +60,8 @@ defmodule DiscordWebhook.Request do
   defdelegate embed_color(embed, color), to: Embed, as: :set_color
   defdelegate embed_footer(embed, text, icon_url), to: Embed, as: :set_footer
 
+  @doc false
+  @spec to_parts(t()) :: list()
   def to_parts(%__MODULE__{} = request) do
     files =
       request.files

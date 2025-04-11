@@ -24,6 +24,7 @@ defmodule DiscordWebhook.Embed do
 
   defguardp is_color(term) when is_integer(term) and 0 <= term and term <= 0xFFFFFF
 
+  @spec new :: t()
   def new do
     %__MODULE__{}
   end
