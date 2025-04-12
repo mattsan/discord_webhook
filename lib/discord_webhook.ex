@@ -1,6 +1,6 @@
 defmodule DiscordWebhook do
   @moduledoc """
-  Documentation for `DiscordWebhook`.
+  Discord webhook.
   """
 
   alias DiscordWebhook.Endpoint
@@ -9,18 +9,25 @@ defmodule DiscordWebhook do
   @doc """
   Executes Webhook.
 
+  see https://discord.com/developers/docs/resources/webhook#execute-webhook
+
   ### Examples
 
   ```elixir
   alias DiscordWebhook.{Endpoint, Request}
 
-  webhook_id = System.fetch_env!("DISCORD_WEBHOOK_ID")
-  webhook_token = System.fetch_env!("DISCORD_WEBHOOK_TOKEN")
-  endpoint = Endpoint.new(webhook_id, webhook_token)
-  # or
+  # give ID and TOKEN immediately
+  endpoint = Endpoint.new("012345678901234567", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxx-xxxxxxxxx-xxxxx")
+
+  # or give them via environment variables
   endpoint = Endpoint.new({:system, "DISCORD_WEBHOOK_ID"}, {:system, "DISCORD_WEBHOOK_TOKEN"})
 
-  request = Request.new() |> Request.set_content("Hello")
+  # build a request
+  request =
+    Request.new()
+    |> Request.set_content("Hello")
+
+  # execute webhook
   DiscordWebhook.execute(endpoint, request)
   ```elixir
   """

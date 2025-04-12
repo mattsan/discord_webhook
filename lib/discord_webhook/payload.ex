@@ -4,14 +4,15 @@ defmodule DiscordWebhook.Payload do
   """
 
   @derive JSON.Encoder
-  defstruct [:content, :username, :avatar_url, attachments: [], embeds: []]
+  defstruct [:content, :username, :avatar_url, :poll, attachments: [], embeds: []]
 
   @type t() :: %__MODULE__{
           content: binary(),
           username: binary() | nil,
           avatar_url: binary() | nil,
           attachments: [attachment()] | nil,
-          embeds: [DiscordWebhook.Embed.t()] | nil
+          embeds: [DiscordWebhook.Embed.t()] | nil,
+          poll: DiscordWebhook.Poll.t() | nil
         }
   @type attachment() :: {description :: binary(), filename :: binary()}
 

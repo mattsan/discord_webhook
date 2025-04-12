@@ -113,7 +113,7 @@ defmodule DiscordWebhook.RequestTest do
     test "空のリクエストを変換できる", %{request: request} do
       assert [
                {"payload_json",
-                ~S({"content":null,"username":null,"avatar_url":null,"attachments":[],"embeds":[]})}
+                ~S({"content":null,"username":null,"avatar_url":null,"poll":null,"attachments":[],"embeds":[]})}
              ] == Request.to_form_multipart(request)
     end
 
@@ -121,7 +121,7 @@ defmodule DiscordWebhook.RequestTest do
       assert [
                {
                  "payload_json",
-                 ~S({"content":"a content","username":"e.mattasn","avatar_url":"https://example.com/path/to/avatar.png","attachments":[{"id":0,"filename":"text1.txt","description":"a first text"},{"id":1,"filename":"text2.txt","description":"a second text"}],"embeds":[]})
+                 ~S({"content":"a content","username":"e.mattasn","avatar_url":"https://example.com/path/to/avatar.png","poll":null,"attachments":[{"id":0,"filename":"text1.txt","description":"a first text"},{"id":1,"filename":"text2.txt","description":"a second text"}],"embeds":[]})
                },
                {
                  "files[0]",

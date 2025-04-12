@@ -30,13 +30,6 @@ defmodule DiscordWebhook.Embed do
 
   defguardp is_color(term) when is_integer(term) and 0 <= term and term <= 0xFFFFFF
 
-  @doc false
-  @spec to_timestamp(timestamp()) :: binary()
-  def to_timestamp(term) when is_binary(term), do: term
-  def to_timestamp(term) when is_struct(term, Date), do: Date.to_iso8601(term)
-  def to_timestamp(term) when is_struct(term, DateTime), do: DateTime.to_iso8601(term)
-  def to_timestamp(term) when is_struct(term, NaiveDateTime), do: NaiveDateTime.to_iso8601(term)
-
   @doc """
   Creates a new blank embed object.
   """
@@ -102,7 +95,7 @@ defmodule DiscordWebhook.Embed do
   """
   @spec set_timestamp(t(), timestamp()) :: t()
   def set_timestamp(%__MODULE__{} = embed, timestamp) when is_timestamp(timestamp) do
-    %{embed | timestamp: to_timestamp(timestamp)}
+    %{embed | timestamp: timestamp}
   end
 
   @doc """
