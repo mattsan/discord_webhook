@@ -24,6 +24,13 @@ defmodule DiscordWebhook.Embed do
 
   defguardp is_color(term) when is_integer(term) and 0 <= term and term <= 0xFFFFFF
 
+  @doc false
+  @spec to_timestamp(timestamp()) :: binary()
+  def to_timestamp(term) when is_binary(term), do: term
+  def to_timestamp(term) when is_struct(term, Date), do: Date.to_iso8601(term)
+  def to_timestamp(term) when is_struct(term, DateTime), do: DateTime.to_iso8601(term)
+  def to_timestamp(term) when is_struct(term, NaiveDateTime), do: NaiveDateTime.to_iso8601(term)
+
   @spec new :: t()
   def new do
     %__MODULE__{}
@@ -41,7 +48,7 @@ defmodule DiscordWebhook.Embed do
 
   @spec set_timestamp(t(), timestamp()) :: t()
   def set_timestamp(%__MODULE__{} = embed, timestamp) when is_timestamp(timestamp) do
-    %{embed | timestamp: timestamp}
+    %{embed | timestamp: to_timestamp(timestamp)}
   end
 
   @spec set_color(t(), color()) :: t()
@@ -49,8 +56,9 @@ defmodule DiscordWebhook.Embed do
     %{embed | color: color}
   end
 
-  @spec set_footer(t(), binary(), binary()) :: t()
-  def set_footer(%__MODULE__{} = embed, text, icon_url) do
+  @spec set_footer(t(), binary(), binary() | nil) :: t()
+  def set_footer(%__MODULE__{} = embed, text, icon_url \\ nil)
+      when is_binary(text) and (is_binary(icon_url) or is_nil(icon_url)) do
     %{embed | footer: %{text: text, icon_url: icon_url}}
   end
 end
