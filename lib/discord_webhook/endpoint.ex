@@ -43,18 +43,18 @@ defmodule DiscordWebhook.Endpoint do
   end
 
   @doc """
-  Returns the endpoint URL.
+  Returns the endpoint URL to execute Webhook.
 
   ### Examples
 
   ```elixir
   iex> Endpoint.new("foo", "bar")
-  ...> |> Endpoint.url()
+  ...> |> Endpoint.url_to_execute()
   "https://discord.com/api/webhooks/foo/bar"
   ```
   """
-  @spec url(t()) :: binary()
-  def url(%__MODULE__{base: base, id: id, token: token}) do
+  @spec url_to_execute(t()) :: binary()
+  def url_to_execute(%__MODULE__{base: base, id: id, token: token}) do
     path = Path.join(["/", id, token])
 
     base

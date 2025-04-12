@@ -4,39 +4,30 @@ defmodule DiscordWebhook.EndpointTest do
 
   doctest Endpoint
 
-  defp setup_env(context) do
+  defp setup_env({key, value}) do
+    prev_env = System.fetch_env(key)
+    on_exit(fn -> cleanup_env(key, prev_env) end)
+
+    :ok = System.put_env(key, value)
+  end
+
+  defp cleanup_env(key, {:ok, value}), do: System.put_env(key, value)
+  defp cleanup_env(key, _), do: System.delete_env(key)
+
+  setup(context) do
     env = get_in(context, [:env])
-
-    if !is_nil(env) do
-      Enum.each(env, fn {key, value} ->
-        prev_env = System.fetch_env(key)
-
-        :ok = System.put_env(key, value)
-
-        on_exit(fn ->
-          case prev_env do
-            {:ok, value} ->
-              System.put_env(key, value)
-
-            _ ->
-              System.delete_env(key)
-          end
-        end)
-      end)
-    end
+    if !is_nil(env), do: Enum.each(env, &setup_env/1)
 
     :ok
   end
 
-  setup :setup_env
-
   describe "new/2" do
-    test "文字列で指定した ID とトークンが格納されること" do
+    test "文字列で指定した ID とトークンが格納される" do
       assert %Endpoint{id: "FOO", token: "BAR"} = Endpoint.new("FOO", "BAR")
     end
 
     @tag env: [{"WEBHOOK_ID", "FOO"}, {"WEBHOOK_TOKEN", "BAR"}]
-    test "環境変数で指定した ID とトークンが格納されること" do
+    test "環境変数で指定した ID とトークンが格納される" do
       assert %Endpoint{id: "FOO", token: "BAR"} =
                Endpoint.new({:system, "WEBHOOK_ID"}, {:system, "WEBHOOK_TOKEN"})
     end

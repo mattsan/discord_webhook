@@ -9,36 +9,57 @@ defmodule DiscordWebhook.RequestTest do
     [request: Request.new()]
   end
 
-  describe "set_content" do
+  describe "set_content/2" do
     test "content を設定できる", %{request: request} do
-      assert %Request{payload: %Payload{content: nil}} = request
+      assert %Request{payload: %Payload{content: nil}, files: []} == request
 
-      assert %Request{payload: %Payload{content: "a content"}} =
+      assert %Request{payload: %Payload{content: "a content"}, files: []} ==
                Request.set_content(request, "a content")
     end
+
+    test "文字列でないものは設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.set_content(request, :something_wrong)
+      end)
+    end
   end
 
-  describe "set_username" do
+  describe "set_username/2" do
     test "username を設定できる", %{request: request} do
-      assert %Request{payload: %Payload{username: nil}} = request
+      assert %Request{payload: %Payload{username: nil}, files: []} == request
 
-      assert %Request{payload: %Payload{username: "e.mattsan"}} =
+      assert %Request{payload: %Payload{username: "e.mattsan"}, files: []} ==
                Request.set_username(request, "e.mattsan")
     end
-  end
 
-  describe "set_avatar_url" do
-    test "avatar_url を設定できる", %{request: request} do
-      assert %Request{payload: %Payload{avatar_url: nil}} = request
-
-      assert %Request{payload: %Payload{avatar_url: "https://example.com/path/to/avatar.png"}} =
-               Request.set_avatar_url(request, "https://example.com/path/to/avatar.png")
+    test "文字列でないものは設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.set_username(request, :something_wrong)
+      end)
     end
   end
 
-  describe "attach_file" do
+  describe "set_avatar_url/2" do
+    test "avatar_url を設定できる", %{request: request} do
+      assert %Request{payload: %Payload{avatar_url: nil}, files: []} == request
+
+      assert %Request{
+               payload: %Payload{avatar_url: "https://example.com/path/to/avatar.png"},
+               files: []
+             } ==
+               Request.set_avatar_url(request, "https://example.com/path/to/avatar.png")
+    end
+
+    test "文字列でないものは設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.set_avatar_url(request, :something_wrong)
+      end)
+    end
+  end
+
+  describe "attach_file/3" do
     test "ファイルを添付できる", %{request: request} do
-      assert %Request{payload: %Payload{attachments: []}, files: []} = request
+      assert %Request{payload: %Payload{attachments: []}, files: []} == request
 
       request = Request.attach_file(request, "a first text", "text1.txt", "A first sentence.")
 
@@ -51,7 +72,7 @@ defmodule DiscordWebhook.RequestTest do
                files: [
                  {"text1.txt", "A first sentence."}
                ]
-             } = request
+             } == request
 
       request = Request.attach_file(request, "a second text", "text2.txt", "A second sentence.")
 
@@ -66,11 +87,29 @@ defmodule DiscordWebhook.RequestTest do
                  {"text1.txt", "A first sentence."},
                  {"text2.txt", "A second sentence."}
                ]
-             } = request
+             } == request
+    end
+
+    test "文字列でないものは description に設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.attach_file(request, :something_wrong, "text.txt", "A sentence.")
+      end)
+    end
+
+    test "文字列でないものは filename に設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.attach_file(request, "a text", :something_wrong, "A sentence.")
+      end)
+    end
+
+    test "バイナリでないものはファイル本体として設定できない", %{request: request} do
+      assert_raise(FunctionClauseError, fn ->
+        Request.attach_file(request, "a text", "text.txt", :something_wrong)
+      end)
     end
   end
 
-  describe "to_parts" do
+  describe "to_form_multipart/1" do
     test "空のリクエストを変換できる", %{request: request} do
       assert [
                {"payload_json",
@@ -88,14 +127,14 @@ defmodule DiscordWebhook.RequestTest do
                  "files[0]",
                  {
                    "A first sentence.",
-                   [filename: "text1.txt", content_type: "application/octet-stream"]
+                   [filename: "text1.txt", content_type: "text/plain"]
                  }
                },
                {
                  "files[1]",
                  {
                    "A second sentence.",
-                   [filename: "text2.txt", content_type: "application/octet-stream"]
+                   [filename: "text2.txt", content_type: "text/plain"]
                  }
                }
              ] ==

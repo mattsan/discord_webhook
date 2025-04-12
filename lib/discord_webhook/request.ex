@@ -1,6 +1,8 @@
 defmodule DiscordWebhook.Request do
   @moduledoc """
   A struct of requst and construction functions.
+
+  see https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
   """
 
   defstruct [:payload, :files]
@@ -14,36 +16,100 @@ defmodule DiscordWebhook.Request do
         }
   @type file() :: {filename :: binary(), body :: binary()}
 
+  @doc """
+  Creates a new blank request.
+  """
   @spec new :: t()
   def new do
-    %__MODULE__{payload: %Payload{}, files: []}
+    %__MODULE__{payload: Payload.new(), files: []}
   end
 
+  @doc """
+  Sets content to the request.
+
+  ### Examples
+
+  ```elixir
+  Request.new()
+  |> Request.set_content("the message contents")
+  ```
+  """
   @spec set_content(t(), binary()) :: t()
   def set_content(%__MODULE__{} = request, content) when is_binary(content) do
     update_payload(request, :content, content)
   end
 
+  @doc """
+  Sets username to the request.
+
+  ### Examples
+
+  ```elixir
+  Request.new()
+  |> Request.set_username("e.mattsan")
+  ```
+  """
   @spec set_username(t(), binary()) :: t()
   def set_username(%__MODULE__{} = request, username) when is_binary(username) do
     update_payload(request, :username, username)
   end
 
+  @doc """
+  Sets avatar URL to the request.
+
+  ### Examples
+
+  ```elixir
+  Request.new()
+  |> Request.set_avatar_url("https://example.com/avatar.png")
+  ```
+  """
   @spec set_avatar_url(t(), binary()) :: t()
   def set_avatar_url(%__MODULE__{} = request, avatar_url) when is_binary(avatar_url) do
     update_payload(request, :avatar_url, avatar_url)
   end
 
-  @spec embed(t(), Embed.t()) :: t()
+  @doc """
+  Sets embed object to the request.
+
+  ### Examples
+
+  ```elixir
+  embed =
+    Embed.new()
+    |> Embed.set_description("description")
+
+  Request.new()
+  |> Request.embed(embed)
+  ```
+
+  ```elixir
+  Request.new()
+  |> Request.embed(fn embed ->
+    embed
+    |> Request.embed_description("description")
+  end)
+  ```
+  """
+  @spec embed(t(), Embed.t() | (Embed.t() -> Embed.t())) :: t()
   def embed(%__MODULE__{} = request, %Embed{} = embed) do
     update_payload(request, :embeds, request.payload.embeds ++ [embed])
   end
 
-  @spec embed(t(), (Embed.t() -> Embed.t())) :: t()
   def embed(%__MODULE__{} = request, fun) when is_function(fun) do
     update_payload(request, :embeds, request.payload.embeds ++ [fun.(Embed.new())])
   end
 
+  @doc """
+  Attach a file to the request.
+
+  ### Examples
+
+  ```elixir
+  Request.new()
+  |> Request.attach_file("sample image", "sample.jpg", File.read!("path/to/sample.jpg"))
+  ```
+  """
   @spec attach_file(t(), binary(), binary(), binary()) :: t()
   def attach_file(%__MODULE__{} = request, description, filename, body)
       when is_binary(description) and is_binary(filename) and is_binary(body) do
@@ -69,8 +135,8 @@ defmodule DiscordWebhook.Request do
   def to_form_multipart(%__MODULE__{} = request) do
     files =
       request.files
-      |> Enum.with_index(fn {filename, body}, index ->
-        file_part(index, filename, body)
+      |> Enum.with_index(fn {filename, body}, id ->
+        file_part(id, filename, body)
       end)
 
     [payload_part(request.payload) | files]
@@ -89,16 +155,20 @@ defmodule DiscordWebhook.Request do
     {"payload_json", payload_json}
   end
 
-  defp file_part(index, filename, body) do
+  defp file_part(id, filename, body) do
     {
-      "files[#{index}]",
+      "files[#{id}]",
       {
         body,
         [
           filename: filename,
-          content_type: :mimerl.extension(filename)
+          content_type: mime_type_of(filename)
         ]
       }
     }
+  end
+
+  defp mime_type_of(filename) do
+    :mimerl.filename(filename)
   end
 end
