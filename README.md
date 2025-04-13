@@ -1,6 +1,8 @@
 # DiscordWebhook
 
-**TODO: Add description**
+[Discord Webhook](https://discord.com/developers/docs/resources/webhook)
+
+[![Elixir CI](https://github.com/mattsan/japanese_holiday/actions/workflows/elixir.yml/badge.svg)](https://github.com/mattsan/japanese_holiday/actions/workflows/elixir.yml)
 
 ## Installation
 
