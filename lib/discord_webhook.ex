@@ -1,6 +1,9 @@
 defmodule DiscordWebhook do
   @moduledoc """
   Discord webhook.
+
+  For more information, see the Discord Webhook document.
+  - https://discord.com/developers/docs/resources/webhook
   """
 
   alias DiscordWebhook.Endpoint
@@ -9,7 +12,8 @@ defmodule DiscordWebhook do
   @doc """
   Executes Webhook.
 
-  see https://discord.com/developers/docs/resources/webhook#execute-webhook
+  - `endpoint` - `DiscordWebhook.Endpoint` struct.
+  - `request` - `DiscordWebhook.Request` struct.
 
   ### Examples
 

@@ -2,7 +2,8 @@ defmodule DiscordWebhook.Request do
   @moduledoc """
   A struct of requst and construction functions.
 
-  see https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
+  For more information, see the Discord Webhook document.
+  - https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
 
   ### Examples
 
@@ -12,16 +13,15 @@ defmodule DiscordWebhook.Request do
     |> Request.set_content("Quos molestiae voluptates illo.")
     |> Request.set_username("voluptas")
     |> Request.set_avatar_url("https://example.com/avatar.png")
-    |> Request.embed(fn embed ->
-      embed
-      |> Request.embed_title("Rerum eum dolorem qui nihil autem.")
-      |> Request.embed_description("Placeat officia qui fuga ut.")
-      |> Request.embed_timestamp(NaiveDateTime.utc_now())
-      |> Request.embed_color(0xFFFF00)
-      |> Request.embed_footer("magni", "https://example.com/footer-icon.png")
-    end)
-    |> Request.attach_file("Expedita aut natus sunt explicabo sit nulla sequi minima.", "illo.jpg", File.read!("path/to/illo.jpg"))
-    |> Request.attach_file("Dolores mollitia asperiores necessitatibus sint et voluptas.", "maiores.pdf", File.read!("path/to/maiores.pdf"))
+    |> Request.add_embed(
+      title: "Rerum eum dolorem qui nihil autem.",
+      description: "Placeat officia qui fuga ut.",
+      timestamp: NaiveDateTime.utc_now(),
+      color: 0xFFFF00,
+      footer: {"magni", "https://example.com/footer-icon.png"}
+    )
+    |> Request.attach_file("Expedita", "illo.jpg", File.read!("path/to/illo.jpg"))
+    |> Request.attach_file("Dolores", "maiores.pdf", File.read!("path/to/maiores.pdf"))
     |> Request.set_poll(
       question: "Which do you like?",
       answers: ~w(foo bar baz),
@@ -36,6 +36,8 @@ defmodule DiscordWebhook.Request do
   alias DiscordWebhook.Embed
   alias DiscordWebhook.Payload
   alias DiscordWebhook.Poll
+
+  import Embed, only: [is_timestamp: 1, is_color: 1]
 
   @type t() :: %__MODULE__{
           payload: Payload.t(),
@@ -97,7 +99,9 @@ defmodule DiscordWebhook.Request do
   end
 
   @doc """
-  Sets embed object to the request.
+  Adds embed object to the request.
+
+  Up to 10 Embed Objects can be embedded.
 
   ### Examples
 
@@ -107,24 +111,49 @@ defmodule DiscordWebhook.Request do
     |> Embed.set_description("description")
 
   Request.new()
-  |> Request.embed(embed)
+  |> Request.add_embed(embed)
   ```
 
   ```elixir
   Request.new()
-  |> Request.embed(fn embed ->
-    embed
-    |> Request.embed_description("description")
-  end)
+  |> Request.add_embed(
+    description: "description"
+  )
   ```
   """
-  @spec embed(t(), Embed.t() | (Embed.t() -> Embed.t())) :: t()
-  def embed(%__MODULE__{} = request, %Embed{} = embed) do
+  @spec add_embed(t(), Embed.t() | keyword()) :: t()
+  def add_embed(%__MODULE__{} = request, %Embed{} = embed) do
     update_payload(request, :embeds, request.payload.embeds ++ [embed])
   end
 
-  def embed(%__MODULE__{} = request, fun) when is_function(fun) do
-    update_payload(request, :embeds, request.payload.embeds ++ [fun.(Embed.new())])
+  def add_embed(%__MODULE__{} = request, fields) when is_list(fields) do
+    embed =
+      Enum.reduce(fields, Embed.new(), fn field, embed ->
+        case field do
+          {:title, title} when is_binary(title) ->
+            Embed.set_title(embed, title)
+
+          {:description, description} when is_binary(description) ->
+            Embed.set_description(embed, description)
+
+          {:timestamp, timestamp} when is_timestamp(timestamp) ->
+            Embed.set_timestamp(embed, timestamp)
+
+          {:color, color} when is_color(color) ->
+            Embed.set_color(embed, color)
+
+          {:footer, text} when is_binary(text) ->
+            Embed.set_footer(embed, text)
+
+          {:footer, {text}} when is_binary(text) ->
+            Embed.set_footer(embed, text)
+
+          {:footer, {text, icon_url}} when is_binary(text) and is_binary(icon_url) ->
+            Embed.set_footer(embed, text, icon_url)
+        end
+      end)
+
+    add_embed(request, embed)
   end
 
   @doc """
@@ -211,12 +240,6 @@ defmodule DiscordWebhook.Request do
   defp update_payload(request, key, value) do
     %{request | payload: %{request.payload | key => value}}
   end
-
-  defdelegate embed_title(embed, title), to: Embed, as: :set_title
-  defdelegate embed_description(embed, description), to: Embed, as: :set_description
-  defdelegate embed_timestamp(embed, timestamp), to: Embed, as: :set_timestamp
-  defdelegate embed_color(embed, color), to: Embed, as: :set_color
-  defdelegate embed_footer(embed, text, icon_url), to: Embed, as: :set_footer
 
   @doc false
   @spec to_form_multipart(t()) :: list()

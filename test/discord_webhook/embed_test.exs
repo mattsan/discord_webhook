@@ -71,7 +71,7 @@ defmodule DiscordWebhook.EmbedTest do
       assert %Embed{
                title: nil,
                description: nil,
-               timestamp: "2025-04-12",
+               timestamp: ~D[2025-04-12],
                color: nil,
                footer: nil
              } == Embed.set_timestamp(embed, ~D[2025-04-12])
@@ -81,7 +81,7 @@ defmodule DiscordWebhook.EmbedTest do
       assert %Embed{
                title: nil,
                description: nil,
-               timestamp: "2025-04-12T12:34:56Z",
+               timestamp: ~U[2025-04-12T12:34:56+00:00],
                color: nil,
                footer: nil
              } == Embed.set_timestamp(embed, ~U[2025-04-12T12:34:56+00:00])
@@ -91,7 +91,7 @@ defmodule DiscordWebhook.EmbedTest do
       assert %Embed{
                title: nil,
                description: nil,
-               timestamp: "2025-04-12T12:34:56",
+               timestamp: ~N[2025-04-12T12:34:56],
                color: nil,
                footer: nil
              } == Embed.set_timestamp(embed, ~N[2025-04-12T12:34:56])

@@ -22,13 +22,21 @@ defmodule DiscordWebhook.Embed do
           footer: footer() | nil
         }
 
-  defguardp is_timestamp(term)
+  @doc """
+  Returns `true` if `term` is a binary, `Date`, `DateTime` or `NaiveDateTime`, otherwise returns `false`.
+  """
+  @spec is_timestamp(term()) :: boolean()
+  defguard is_timestamp(term)
             when is_binary(term) or
                    is_struct(term, Date) or
                    is_struct(term, DateTime) or
                    is_struct(term, NaiveDateTime)
 
-  defguardp is_color(term) when is_integer(term) and 0 <= term and term <= 0xFFFFFF
+  @doc """
+  Returns `true` if `term` is a integer and `0 <= term <= 0xFFFFFF`, otherwise returns `false`.
+  """
+  @spec is_color(term()) :: boolean()
+  defguard is_color(term) when is_integer(term) and 0 <= term and term <= 0xFFFFFF
 
   @doc """
   Creates a new blank embed object.

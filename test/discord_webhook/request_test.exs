@@ -1,5 +1,6 @@
 defmodule DiscordWebhook.RequestTest do
   use ExUnit.Case
+  alias DiscordWebhook.Embed
   alias DiscordWebhook.Payload
   alias DiscordWebhook.Request
 
@@ -54,6 +55,96 @@ defmodule DiscordWebhook.RequestTest do
       assert_raise(FunctionClauseError, fn ->
         Request.set_avatar_url(request, :something_wrong)
       end)
+    end
+  end
+
+  describe "add_embed/2" do
+    test "Embed 構造体を利用して content を埋め込める", %{request: request} do
+      assert %Request{payload: %Payload{}, files: []} == request
+
+      request = Request.add_embed(request, Embed.set_title(Embed.new(), "something 1"))
+
+      assert %Request{
+               payload: %Payload{
+                 embeds: [
+                   %Embed{title: "something 1"}
+                 ]
+               },
+               files: []
+             } == request
+
+      request = Request.add_embed(request, Embed.set_title(Embed.new(), "something 2"))
+
+      assert %Request{
+               payload: %Payload{
+                 embeds: [
+                   %Embed{title: "something 1"},
+                   %Embed{title: "something 2"}
+                 ]
+               },
+               files: []
+             } == request
+    end
+
+    test "パラメータを指定して content を埋め込める", %{request: request} do
+      assert %Request{payload: %Payload{}, files: []} == request
+
+      request =
+        Request.add_embed(
+          request,
+          title: "title 1",
+          description: "description 1",
+          timestamp: ~U[2025-04-13T00:00:01Z],
+          color: 1,
+          footer: "footer 1"
+        )
+
+      assert %Request{
+               payload: %Payload{
+                 embeds: [
+                   %Embed{
+                     title: "title 1",
+                     description: "description 1",
+                     timestamp: ~U[2025-04-13T00:00:01Z],
+                     color: 1,
+                     footer: %{text: "footer 1", icon_url: nil}
+                   }
+                 ]
+               },
+               files: []
+             } == request
+
+      request =
+        Request.add_embed(
+          request,
+          title: "title 2",
+          description: "description 2",
+          timestamp: ~U[2025-04-13T00:00:02Z],
+          color: 2,
+          footer: {"footer 2", "https://example.com/footer-icon.png"}
+        )
+
+      assert %Request{
+               payload: %Payload{
+                 embeds: [
+                   %Embed{
+                     title: "title 1",
+                     description: "description 1",
+                     timestamp: ~U[2025-04-13T00:00:01Z],
+                     color: 1,
+                     footer: %{text: "footer 1", icon_url: nil}
+                   },
+                   %Embed{
+                     title: "title 2",
+                     description: "description 2",
+                     timestamp: ~U[2025-04-13T00:00:02Z],
+                     color: 2,
+                     footer: %{text: "footer 2", icon_url: "https://example.com/footer-icon.png"}
+                   }
+                 ]
+               },
+               files: []
+             } == request
     end
   end
 
